@@ -73,4 +73,34 @@ func TestUnquote(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, `\xZZ`, out)
 	})
+
+	t.Run("hex escape x20 in double quotes", func(t *testing.T) {
+		out, err := shell.Unquote(`"foo\x20bar"`)
+		require.NoError(t, err)
+		require.Equal(t, "foo bar", out)
+	})
+
+	t.Run("hex escape is entire string", func(t *testing.T) {
+		out, err := shell.Unquote(`\x20`)
+		require.NoError(t, err)
+		require.Equal(t, " ", out)
+	})
+
+	t.Run("hex escape non-space character", func(t *testing.T) {
+		out, err := shell.Unquote(`foo\x09bar`)
+		require.NoError(t, err)
+		require.Equal(t, "foo\tbar", out)
+	})
+
+	t.Run("hex escape partial digits not decoded", func(t *testing.T) {
+		out, err := shell.Unquote(`abc\x2`)
+		require.NoError(t, err)
+		require.Equal(t, `abc\x2`, out)
+	})
+
+	t.Run("hex escape trailing x no digits", func(t *testing.T) {
+		out, err := shell.Unquote(`abc\x`)
+		require.NoError(t, err)
+		require.Equal(t, `abc\x`, out)
+	})
 }
