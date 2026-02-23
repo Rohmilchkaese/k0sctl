@@ -185,7 +185,10 @@ func (p *UploadFiles) uploadData(h *cluster.Host, f *cluster.UploadFile) error {
 	}
 
 	err := p.Wet(h, fmt.Sprintf("upload inline data => %s", dest), func() error {
-		fileMode, _ := strconv.ParseUint(f.PermString, 8, 32)
+		fileMode, err := strconv.ParseUint(f.PermString, 8, 32)
+		if err != nil {
+			return fmt.Errorf("invalid file mode %q: %w", f.PermString, err)
+		}
 		remoteFile, err := h.SudoFsys().OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(fileMode))
 		if err != nil {
 			return err
