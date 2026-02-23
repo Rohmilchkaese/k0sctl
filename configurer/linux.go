@@ -203,7 +203,7 @@ func (l *Linux) HTTPStatus(h os.Host, url string) (int, error) {
 	}
 	status, err := strconv.Atoi(output)
 	if err != nil {
-		return -1, fmt.Errorf("invalid response: %s", err.Error())
+		return -1, fmt.Errorf("invalid response: %w", err)
 	}
 
 	return status, nil
@@ -223,7 +223,7 @@ func (l *Linux) PrivateInterface(h os.Host) (string, error) {
 		err = fmt.Errorf("can't find 'dev' in output")
 	}
 
-	return "", fmt.Errorf("failed to detect a private network interface, define the host privateInterface manually (%s)", err.Error())
+	return "", fmt.Errorf("failed to detect a private network interface, define the host privateInterface manually: %w", err)
 }
 
 // PrivateAddress resolves internal ip from private interface
