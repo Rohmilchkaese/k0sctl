@@ -143,7 +143,7 @@ func (p *ResetControllers) Run(ctx context.Context) error {
 
 		log.Debugf("%s: removing k0s binary...", h)
 		if dErr := h.Configurer.DeleteFile(h, h.Configurer.K0sBinaryPath()); dErr != nil {
-			log.Warnf("%s: failed to remove existing binary %s: %s", h, h.Configurer.K0sConfigPath(), dErr)
+			log.Warnf("%s: failed to remove existing binary %s: %s", h, h.Configurer.K0sBinaryPath(), dErr)
 		}
 		log.Debugf("%s: removing binary completed", h)
 

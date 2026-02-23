@@ -83,7 +83,7 @@ func (p *ResetLeader) Run(ctx context.Context) error {
 
 	log.Debugf("%s: removing k0s binary...", p.leader)
 	if dErr := p.leader.Configurer.DeleteFile(p.leader, p.leader.Configurer.K0sBinaryPath()); dErr != nil {
-		log.Warnf("%s: failed to remove existing binary %s: %s", p.leader, p.leader.Configurer.K0sConfigPath(), dErr)
+		log.Warnf("%s: failed to remove existing binary %s: %s", p.leader, p.leader.Configurer.K0sBinaryPath(), dErr)
 	}
 	log.Debugf("%s: removing binary completed", p.leader)
 
