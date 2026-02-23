@@ -91,6 +91,7 @@ func (l *Linux) Arch(h os.Host) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	arch = strings.TrimSpace(arch)
 	switch arch {
 	case "x86_64":
 		return "amd64", nil
@@ -119,12 +120,14 @@ func (l *Linux) K0sctlLockFilePath(h os.Host) string {
 
 // TempFile returns a temp file path
 func (l *Linux) TempFile(h os.Host) (string, error) {
-	return h.ExecOutput("mktemp")
+	out, err := h.ExecOutput("mktemp")
+	return strings.TrimSpace(out), err
 }
 
 // TempDir returns a temp dir path
 func (l *Linux) TempDir(h os.Host) (string, error) {
-	return h.ExecOutput("mktemp -d")
+	out, err := h.ExecOutput("mktemp -d")
+	return strings.TrimSpace(out), err
 }
 
 var trailingNumberRegex = regexp.MustCompile(`(\d+)$`)
@@ -285,7 +288,8 @@ func (l *Linux) DeleteDir(h os.Host, path string, opts ...exec.Option) error {
 }
 
 func (l *Linux) MachineID(h os.Host) (string, error) {
-	return h.ExecOutput(`cat /etc/machine-id || cat /var/lib/dbus/machine-id`)
+	out, err := h.ExecOutput(`cat /etc/machine-id || cat /var/lib/dbus/machine-id`)
+	return strings.TrimSpace(out), err
 }
 
 // SystemTime returns the system time as UTC reported by the OS or an error if this fails
@@ -295,7 +299,7 @@ func (l *Linux) SystemTime(h os.Host) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, fmt.Errorf("failed to get system time: %w", err)
 	}
-	unixTime, err := strconv.ParseInt(out, 10, 64)
+	unixTime, err := strconv.ParseInt(strings.TrimSpace(out), 10, 64)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("failed to parse system time: %w", err)
 	}
