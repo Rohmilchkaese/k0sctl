@@ -62,6 +62,7 @@ func (r Reset) Run(ctx context.Context) error {
 		&phase.ResetLeader{},
 		&phase.DaemonReload{},
 		&phase.Unlock{Cancel: lockPhase.Cancel},
+		&phase.ResetKnownHosts{},
 		&phase.Disconnect{},
 	)
 
