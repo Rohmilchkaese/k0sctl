@@ -42,15 +42,20 @@ var kubeconfigCommand = &cli.Command{
 	Before: actions(initSilentLogging, initConfig, initManager),
 	After:  actions(cancelTimeout),
 	Action: func(ctx *cli.Context) error {
+		manager, ok := ctx.Context.Value(ctxManagerKey{}).(*phase.Manager)
+		if !ok {
+			return fmt.Errorf("failed to retrieve manager from context")
+		}
 		kubeconfigAction := action.Kubeconfig{
-			Manager:              ctx.Context.Value(ctxManagerKey{}).(*phase.Manager),
+			Manager:              manager,
 			KubeconfigAPIAddress: ctx.String("address"),
 			KubeconfigUser:       ctx.String("user"),
 			KubeconfigCluster:    ctx.String("cluster"),
 		}
 
 		if err := kubeconfigAction.Run(ctx.Context); err != nil {
-			return fmt.Errorf("getting kubeconfig failed - log file saved to %s: %w", ctx.Context.Value(ctxLogFileKey{}).(string), err)
+			logFile, _ := ctx.Context.Value(ctxLogFileKey{}).(string)
+			return fmt.Errorf("getting kubeconfig failed - log file saved to %s: %w", logFile, err)
 		}
 
 		fmt.Fprintf(ctx.App.Writer, "%s\n", kubeconfigAction.Manager.Config.Metadata.Kubeconfig)

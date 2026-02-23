@@ -72,13 +72,18 @@ var backupCommand = &cli.Command{
 			out = f
 		}
 
+		manager, ok := ctx.Context.Value(ctxManagerKey{}).(*phase.Manager)
+		if !ok {
+			return fmt.Errorf("failed to retrieve manager from context")
+		}
 		backupAction := action.Backup{
-			Manager: ctx.Context.Value(ctxManagerKey{}).(*phase.Manager),
+			Manager: manager,
 			Out:     out,
 		}
 
 		if err := backupAction.Run(ctx.Context); err != nil {
-			resultErr = fmt.Errorf("backup failed - log file saved to %s: %w", ctx.Context.Value(ctxLogFileKey{}).(string), err)
+			logFile, _ := ctx.Context.Value(ctxLogFileKey{}).(string)
+			resultErr = fmt.Errorf("backup failed - log file saved to %s: %w", logFile, err)
 		}
 
 		return resultErr

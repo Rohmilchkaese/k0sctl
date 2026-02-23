@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/k0sproject/k0sctl/action"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
 
@@ -21,8 +23,12 @@ var configEditCommand = &cli.Command{
 	Before: actions(initLogging, initConfig),
 	After:  actions(cancelTimeout),
 	Action: func(ctx *cli.Context) error {
+		config, ok := ctx.Context.Value(ctxConfigsKey{}).(*v1beta1.Cluster)
+		if !ok {
+			return fmt.Errorf("failed to retrieve config from context")
+		}
 		configEditAction := action.ConfigEdit{
-			Config: ctx.Context.Value(ctxConfigsKey{}).(*v1beta1.Cluster),
+			Config: config,
 			Stdout: ctx.App.Writer,
 			Stderr: ctx.App.ErrWriter,
 			Stdin:  ctx.App.Reader,

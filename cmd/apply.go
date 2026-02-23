@@ -123,7 +123,8 @@ var applyCommand = &cli.Command{
 		applyAction := action.NewApply(applyOpts)
 
 		if err := applyAction.Run(ctx.Context); err != nil {
-			return fmt.Errorf("apply failed - log file saved to %s: %w", ctx.Context.Value(ctxLogFileKey{}).(string), err)
+			logFile, _ := ctx.Context.Value(ctxLogFileKey{}).(string)
+			return fmt.Errorf("apply failed - log file saved to %s: %w", logFile, err)
 		}
 
 		return nil
