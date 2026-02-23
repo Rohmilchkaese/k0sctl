@@ -25,7 +25,7 @@ func (p *Disconnect) DryRun() error {
 		return nil
 	})
 
-	return p.Run(context.TODO())
+	return p.Run(context.Background())
 }
 
 // Run the phase
