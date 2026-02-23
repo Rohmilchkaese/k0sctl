@@ -33,6 +33,8 @@ func (p *ValidateFacts) Run(_ context.Context) error {
 		return err
 	}
 
+	p.warnVersionSkew()
+
 	return nil
 }
 
@@ -74,6 +76,41 @@ func (p *ValidateFacts) validateDefaultVersion() error {
 	}
 
 	return nil
+}
+
+// warnVersionSkew warns if the target version would create a version skew
+// between controllers and workers that exceeds the Kubernetes N-2 policy.
+func (p *ValidateFacts) warnVersionSkew() {
+	target := p.Config.Spec.K0s.Version
+	if target == nil {
+		return
+	}
+	targetSegs := target.Segments()
+	if len(targetSegs) < 2 {
+		return
+	}
+	targetMinor := targetSegs[1]
+
+	for _, h := range p.Config.Spec.Hosts {
+		running := h.Metadata.K0sRunningVersion
+		if running == nil || h.Metadata.NeedsUpgrade {
+			continue
+		}
+		segs := running.Segments()
+		if len(segs) < 2 {
+			continue
+		}
+		runningMinor := segs[1]
+
+		diff := targetMinor - runningMinor
+		if diff < 0 {
+			diff = -diff
+		}
+
+		if diff > 2 {
+			log.Warnf("%s: running version %s is %d minor versions away from target %s — this exceeds the Kubernetes version skew policy (N-2)", h, running, diff, target)
+		}
+	}
 }
 
 func (p *ValidateFacts) validateNodeLocalLoadBalancing() error {
