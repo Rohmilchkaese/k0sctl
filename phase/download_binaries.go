@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
@@ -115,8 +116,23 @@ func (b *binary) download() error {
 	if err != nil {
 		return err
 	}
-	if err := b.downloadTo(p); err != nil {
-		return err
+	var lastErr error
+	for attempt := range 3 {
+		if attempt > 0 {
+			wait := time.Duration(attempt) * 5 * time.Second
+			log.Infof("retrying download in %s (attempt %d/3)", wait, attempt+1)
+			time.Sleep(wait)
+		}
+		if err := b.downloadTo(p); err != nil {
+			lastErr = err
+			log.Warnf("download attempt %d failed: %v", attempt+1, err)
+			continue
+		}
+		lastErr = nil
+		break
+	}
+	if lastErr != nil {
+		return fmt.Errorf("download failed after 3 attempts: %w", lastErr)
 	}
 
 	b.path = p
