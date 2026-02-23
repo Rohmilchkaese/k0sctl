@@ -93,12 +93,14 @@ func (p *Backup) Run(_ context.Context) error {
 	}
 
 	cmd := h.K0sBackupCommand(backupDir)
+	log.Infof("%s: running backup command", h)
 	err = p.Wet(h, fmt.Sprintf("create backup using `%s`", cmd), func() error {
 		return h.Exec(h.K0sBackupCommand(backupDir), exec.Sudo(h))
 	})
 	if err != nil {
 		return err
 	}
+	log.Infof("%s: backup command completed successfully", h)
 
 	// get the name of the backup file
 	var remoteFile string
@@ -131,6 +133,7 @@ func (p *Backup) Run(_ context.Context) error {
 	}()
 
 	if p.IsWet() {
+		log.Infof("%s: downloading backup from %s", h, remotePath)
 		f, err := h.SudoFsys().Open(remotePath)
 		if err != nil {
 			return fmt.Errorf("open backup for streaming: %w", err)
@@ -143,6 +146,7 @@ func (p *Backup) Run(_ context.Context) error {
 		if _, err := io.Copy(p.Out, f); err != nil {
 			return fmt.Errorf("download backup: %w", err)
 		}
+		log.Infof("%s: backup download completed", h)
 	} else {
 		p.DryMsgf(nil, "download the backup file to local host")
 	}
