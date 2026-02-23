@@ -98,13 +98,17 @@ var applyCommand = &cli.Command{
 		if evictTaint := ctx.String("evict-taint"); evictTaint != "" {
 			parts := strings.Split(evictTaint, ":")
 			if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-				return fmt.Errorf("invalid evict-taint format, expected <key>:<effect>, got %s", evictTaint)
+				return fmt.Errorf("invalid evict-taint format, expected <key=value>:<effect>, got %s", evictTaint)
 			}
-			manager.Config.Spec.Options.EvictTaint = cluster.EvictTaintOption{
+			opt := cluster.EvictTaintOption{
 				Enabled: true,
 				Taint:   parts[0],
 				Effect:  parts[1],
 			}
+			if err := opt.Validate(); err != nil {
+				return fmt.Errorf("invalid evict-taint: %w", err)
+			}
+			manager.Config.Spec.Options.EvictTaint = opt
 		}
 
 		applyOpts := action.ApplyOptions{
