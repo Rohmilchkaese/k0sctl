@@ -2,6 +2,7 @@ package phase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1/cluster"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ func (p *DaemonReload) Run(ctx context.Context) error {
 	return p.parallelDo(ctx, p.Config.Spec.Hosts, func(_ context.Context, h *cluster.Host) error {
 		log.Infof("%s: reloading service manager", h)
 		if err := h.Configurer.DaemonReload(h); err != nil {
-			log.Warnf("%s: failed to reload service manager: %s", h, err.Error())
+			return fmt.Errorf("failed to reload service manager: %w", err)
 		}
 		return nil
 	})
