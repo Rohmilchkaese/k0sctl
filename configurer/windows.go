@@ -235,7 +235,7 @@ $if`)
 	cmd = strings.ReplaceAll(cmd, "\t", " ")
 	output, err := h.ExecOutput(cmd, exec.Sudo(h))
 	if err != nil {
-		return "", fmt.Errorf("failed to detect private network interface: %s", err)
+		return "", fmt.Errorf("failed to detect private network interface: %w", err)
 	}
 
 	iface := strings.TrimSpace(output)
@@ -261,7 +261,7 @@ func (w *BaseWindows) PrivateAddress(h os.Host, iface, publicip string) (string,
 	cmd = strings.ReplaceAll(cmd, "\t", " ")
 	output, err := h.ExecOutput(cmd)
 	if err != nil {
-		return "", fmt.Errorf("failed to get IP for interface %s: %s", iface, err)
+		return "", fmt.Errorf("failed to get IP for interface %s: %w", iface, err)
 	}
 
 	ip := strings.TrimSpace(output)

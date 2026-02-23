@@ -438,7 +438,7 @@ func LogFile() (*os.File, error) {
 
 	logFile, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND|os.O_SYNC, 0o600)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open log %s: %s", fn, err.Error())
+		return nil, fmt.Errorf("failed to open log %s: %w", fn, err)
 	}
 
 	fmt.Fprintf(logFile, "time=\"%s\" level=info msg=\"###### New session ######\"\n", time.Now().Format(time.RFC822))
@@ -451,7 +451,7 @@ func configReader(ctx *cli.Context, f string) (io.ReadCloser, error) {
 		if inF, ok := ctx.App.Reader.(*os.File); ok {
 			stat, err := inF.Stat()
 			if err != nil {
-				return nil, fmt.Errorf("can't stat stdin: %s", err.Error())
+				return nil, fmt.Errorf("can't stat stdin: %w", err)
 			}
 			if (stat.Mode() & os.ModeCharDevice) == 0 {
 				return inF, nil

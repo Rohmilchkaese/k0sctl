@@ -382,7 +382,7 @@ func (h *Host) K0sInstallFlags() (Flags, error) {
 		// set worker's private address to --node-ip in --extra-kubelet-args if cloud ins't enabled
 		enableCloudProvider, err := h.InstallFlags.GetBoolean("--enable-cloud-provider")
 		if err != nil {
-			return flags, fmt.Errorf("--enable-cloud-provider flag is set to invalid value: %s. (%v)", h.InstallFlags.GetValue("--enable-cloud-provider"), err)
+			return flags, fmt.Errorf("--enable-cloud-provider flag is set to invalid value: %s. (%w)", h.InstallFlags.GetValue("--enable-cloud-provider"), err)
 		}
 		if !enableCloudProvider && h.PrivateAddress != "" {
 			extra.AddUnlessExist("--node-ip=" + h.PrivateAddress)

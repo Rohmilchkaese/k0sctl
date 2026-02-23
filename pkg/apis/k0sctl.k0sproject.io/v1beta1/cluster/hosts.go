@@ -19,7 +19,7 @@ func (hosts Hosts) Validate() error {
 		hostmap := make(map[string]struct{}, len(hosts))
 		for idx, h := range hosts {
 			if err := h.Validate(); err != nil {
-				return fmt.Errorf("host #%d: %v", idx+1, err)
+				return fmt.Errorf("host #%d: %w", idx+1, err)
 			}
 			if h.Role == "single" {
 				return fmt.Errorf("%d hosts defined but includes a host with role 'single': %s", len(hosts), h)
