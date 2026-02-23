@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1/cluster"
@@ -65,18 +62,10 @@ func (p *UploadK0s) Run(ctx context.Context) error {
 }
 
 func (p *UploadK0s) uploadBinary(_ context.Context, h *cluster.Host) error {
-	ts := strconv.Itoa(int(time.Now().UnixNano()))
-	bin := h.K0sInstallLocation()
-	tmp := bin + ".tmp." + ts
-	if h.IsConnected() && h.IsWindows() {
-		// Place the temp marker before the .exe extension
-		if strings.HasSuffix(strings.ToLower(bin), ".exe") {
-			tmp = strings.TrimSuffix(bin, ".exe") + ".tmp." + ts + ".exe"
-		}
-	}
+	tmp := k0sBinaryTempFile(h)
 
 	// Ensure target directory exists before uploading the temp binary.
-	dir := h.Configurer.Dir(bin)
+	dir := h.Configurer.Dir(h.K0sInstallLocation())
 	if err := h.SudoFsys().MkDirAll(dir, fs.FileMode(0o755)); err != nil {
 		return fmt.Errorf("create k0s binary dir %s: %w", dir, err)
 	}
