@@ -186,6 +186,7 @@ func (p *UpgradeControllers) Run(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("controller did not reach ready state: %w", err)
 			}
+			log.Infof("%s: controller is healthy after upgrade", h)
 		}
 
 		if t := p.Config.Spec.Options.EvictTaint; t.Enabled && t.ControllerWorkers && h.Role != "controller" {
