@@ -80,3 +80,47 @@ k0s:
 		require.Equal(t, "https://192.168.0.10:6443", spec.KubeAPIURL())
 	})
 }
+
+func TestClusterInternalAddressNilLeader(t *testing.T) {
+	t.Run("returns empty string when no hosts exist", func(t *testing.T) {
+		spec := &Spec{
+			Hosts: Hosts{},
+		}
+		// K0sLeader() returns nil when there are no controller hosts,
+		// clusterInternalAddress must not panic.
+		require.Equal(t, "", spec.clusterInternalAddress())
+	})
+
+	t.Run("returns private address when leader exists", func(t *testing.T) {
+		spec := &Spec{
+			Hosts: Hosts{
+				&Host{
+					Role:           "controller",
+					PrivateAddress: "10.0.0.1",
+					Connection: rig.Connection{
+						SSH: &rig.SSH{
+							Address: "192.168.0.1",
+						},
+					},
+				},
+			},
+		}
+		require.Equal(t, "10.0.0.1", spec.clusterInternalAddress())
+	})
+
+	t.Run("returns public address when no private address", func(t *testing.T) {
+		spec := &Spec{
+			Hosts: Hosts{
+				&Host{
+					Role: "controller",
+					Connection: rig.Connection{
+						SSH: &rig.SSH{
+							Address: "192.168.0.1",
+						},
+					},
+				},
+			},
+		}
+		require.Equal(t, "192.168.0.1", spec.clusterInternalAddress())
+	})
+}

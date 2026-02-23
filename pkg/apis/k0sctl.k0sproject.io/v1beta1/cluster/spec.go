@@ -157,11 +157,13 @@ func (s *Spec) clusterExternalAddress() string {
 
 func (s *Spec) clusterInternalAddress() string {
 	leader := s.K0sLeader()
+	if leader == nil {
+		return ""
+	}
 	if leader.PrivateAddress != "" {
 		return leader.PrivateAddress
-	} else {
-		return leader.Address()
 	}
+	return leader.Address()
 }
 
 const defaultAPIPort = 6443
