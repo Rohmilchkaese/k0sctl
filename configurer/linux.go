@@ -226,7 +226,7 @@ func (l *Linux) PrivateInterface(h os.Host) (string, error) {
 
 // PrivateAddress resolves internal ip from private interface
 func (l *Linux) PrivateAddress(h os.Host, iface, publicip string) (string, error) {
-	output, err := h.ExecOutput(fmt.Sprintf("%s ip -o addr show dev %s scope global", sbinPath, iface))
+	output, err := h.ExecOutput(fmt.Sprintf("%s ip -o addr show dev %s scope global", sbinPath, shellescape.Quote(iface)))
 	if err != nil {
 		return "", fmt.Errorf("failed to find private interface with name %s: %s. Make sure you've set correct 'privateInterface' for the host in config", iface, output)
 	}
