@@ -27,7 +27,9 @@ func (p *Connect) Run(ctx context.Context) error {
 	return p.parallelDo(ctx, p.Config.Spec.Hosts, func(ctx context.Context, h *cluster.Host) error {
 		return retry.Timeout(ctx, 10*time.Minute, func(_ context.Context) error {
 			if err := h.Connect(); err != nil {
-				if errors.Is(err, rig.ErrCantConnect) || strings.Contains(err.Error(), "host key mismatch") {
+				// Abort on non-retriable errors. The host key mismatch check uses
+			// string matching because rig does not export a typed error for it.
+			if errors.Is(err, rig.ErrCantConnect) || strings.Contains(err.Error(), "host key mismatch") {
 					return errors.Join(retry.ErrAbort, err)
 				}
 
