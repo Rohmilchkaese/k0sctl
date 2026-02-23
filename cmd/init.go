@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -84,7 +85,7 @@ func hostFromAddress(addr, role, user, keypath string) *cluster.Host {
 
 	if idx := strings.Index(addr, ":"); idx > 0 {
 		pstr := addr[idx+1:]
-		if p, err := strconv.Atoi(pstr); err == nil {
+		if p, err := strconv.Atoi(pstr); err == nil && p > 0 && p <= 65535 {
 			port = p
 		}
 		addr = addr[:idx]
@@ -212,9 +213,14 @@ var initCommand = &cli.Command{
 
 		cfg.Metadata.Name = ctx.String("cluster-name")
 
+		ccount := ctx.Int("controller-count")
+		if ccount < 1 {
+			return fmt.Errorf("controller-count must be at least 1, got %d", ccount)
+		}
+
 		// Read addresses from args
 		addresses = append(addresses, ctx.Args().Slice()...)
-		cfg.Spec.Hosts = buildHosts(addresses, ctx.Int("controller-count"), ctx.String("user"), ctx.String("key-path"))
+		cfg.Spec.Hosts = buildHosts(addresses, ccount, ctx.String("user"), ctx.String("key-path"))
 		for _, h := range cfg.Spec.Hosts {
 			_ = defaults.Set(h)
 		}
