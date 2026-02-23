@@ -67,6 +67,9 @@ Shell injection and input validation fixes.
 | # | Branch | What it does |
 |---|--------|--------------|
 | 38 | `claude/add-status-command-4YOuT` | New `k0sctl status` command — read-only cluster health reporting |
+| 42 | `claude/add-plan-command-4YOuT` | New `k0sctl plan` command — dry-run change preview (like terraform plan) |
+| 43 | `claude/add-node-replacement-detect-4YOuT` | Detect replaced nodes during apply with clear guidance |
+| 44 | `claude/add-canary-upgrades-4YOuT` | Canary worker upgrades — upgrade N workers first, then the rest |
 
 ## Tier 7: Code quality (might need discussion)
 
@@ -84,7 +87,7 @@ Shell injection and input validation fixes.
 
 ## Status
 
-- [x] All 41 branches created and pushed
+- [x] All 44 branches created and pushed
 - [x] All branches build cleanly (`go build ./...`)
 - [x] All tests pass (`go test ./...`)
 - [x] No vet warnings (`go vet ./...`)
