@@ -152,9 +152,11 @@ func (l *Linux) DownloadURL(h os.Host, url, destination string, opts ...exec.Opt
 	return nil
 }
 
-// ReplaceK0sTokenPath replaces the config path in the service stub
+// ReplaceK0sTokenPath replaces the config path in the service stub.
+// Both arguments are shell-escaped to prevent command injection when
+// the token path or service file path contain special characters.
 func (l *Linux) ReplaceK0sTokenPath(h os.Host, spath string) error {
-	return h.Exec(fmt.Sprintf("sed -i 's^REPLACEME^%s^g' %s", l.K0sJoinTokenPath(), spath))
+	return h.Exec(fmt.Sprintf("sed -i 's^REPLACEME^%s^g' %s", shellescape.Quote(l.K0sJoinTokenPath()), shellescape.Quote(spath)))
 }
 
 // FileContains returns true if a file contains the substring
