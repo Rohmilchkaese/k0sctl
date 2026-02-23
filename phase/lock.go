@@ -85,6 +85,7 @@ func (p *Lock) startTicker(ctx context.Context, h *cluster.Host) error {
 					log.Debugf("%s: failed to touch lock file: %s", h, err)
 				}
 			case <-ctx.Done():
+				ticker.Stop()
 				log.Tracef("%s: stopped lock cycle, removing file", h)
 				if err := h.Configurer.DeleteFile(h, lfp); err != nil {
 					log.Debugf("%s: failed to remove host lock file, k0sctl may have been previously aborted or crashed. the start of next invocation may be delayed until it expires: %s", h, err)
