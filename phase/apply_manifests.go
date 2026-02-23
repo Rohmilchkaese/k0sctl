@@ -61,9 +61,12 @@ func (p *ApplyManifests) apply(name string, content []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to run apply for manifest %s: %w", name, err)
 	}
+	// Previously this block only logged the error and returned nil, which
+	// silently swallowed kubectl apply failures. Now we propagate the error
+	// so the overall apply phase fails and the user is notified.
 	if err := cmd.Wait(); err != nil {
-		log.Errorf("%s: kubectl apply failed for manifest %s", p.leader, name)
 		log.Errorf("%s: kubectl apply stderr: %s", p.leader, stderr.String())
+		return fmt.Errorf("kubectl apply failed for manifest %s: %w", name, err)
 	}
 	log.Infof("%s: kubectl apply: %s", p.leader, stdout.String())
 	return nil
