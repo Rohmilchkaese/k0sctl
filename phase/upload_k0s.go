@@ -107,7 +107,9 @@ func (p *UploadK0s) uploadBinary(_ context.Context, h *cluster.Host) error {
 func (p *UploadK0s) CleanUp() {
 	_ = p.parallelDo(context.Background(), p.hosts, func(_ context.Context, h *cluster.Host) error {
 		if h.Metadata.K0sBinaryTempFile != "" {
-			_ = h.Configurer.DeleteFile(h, h.Metadata.K0sBinaryTempFile)
+			if err := h.Configurer.DeleteFile(h, h.Metadata.K0sBinaryTempFile); err != nil {
+				log.Warnf("%s: failed to clean up temp binary %s: %v", h, h.Metadata.K0sBinaryTempFile, err)
+			}
 		}
 		return nil
 	})
