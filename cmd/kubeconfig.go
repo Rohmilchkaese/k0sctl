@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/k0sproject/k0sctl/action"
 	"github.com/k0sproject/k0sctl/phase"
@@ -53,6 +54,9 @@ var kubeconfigCommand = &cli.Command{
 			return fmt.Errorf("getting kubeconfig failed - log file saved to %s: %w", ctx.Context.Value(ctxLogFileKey{}).(string), err)
 		}
 
+		if f, ok := ctx.App.Writer.(*os.File); ok && f == os.Stdout {
+			fmt.Fprintln(os.Stderr, "WARNING: kubeconfig contains sensitive cluster credentials. Redirect to a file or pipe to kubectl.")
+		}
 		fmt.Fprintf(ctx.App.Writer, "%s\n", kubeconfigAction.Manager.Config.Metadata.Kubeconfig)
 		return nil
 	},
