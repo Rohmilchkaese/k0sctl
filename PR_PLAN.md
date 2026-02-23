@@ -25,6 +25,9 @@ Clear bugs that affect users. Easy to justify — no behavior change debate.
 | 10 | `claude/fix-daemon-reload-error-4YOuT` | Silent failure in daemon reload (returns nil on error) |
 | 11 | `claude/fix-unsafe-type-assertions-4YOuT` | Unsafe type assertions (panic risk) in cmd/ |
 | 12 | `claude/fix-stdin-dead-code-4YOuT` | Dead code in init command stdin error handling |
+| 39 | `claude/fix-internal-addr-nil-4YOuT` | Nil pointer in clusterInternalAddress() when no controllers |
+| 40 | `claude/fix-isemptyk0s-logic-4YOuT` | Unreachable code / logic bug in isEmptyK0s() |
+| 41 | `claude/fix-init-cleanup-nil-4YOuT` | Nil pointer in InitializeK0s.CleanUp() when leader is nil |
 
 ## Tier 3: Security fixes (likely to merge)
 
@@ -81,7 +84,7 @@ Shell injection and input validation fixes.
 
 ## Status
 
-- [x] All 38 branches created and pushed
+- [x] All 41 branches created and pushed
 - [x] All branches build cleanly (`go build ./...`)
 - [x] All tests pass (`go test ./...`)
 - [x] No vet warnings (`go vet ./...`)
