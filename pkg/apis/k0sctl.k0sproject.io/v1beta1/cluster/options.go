@@ -126,6 +126,7 @@ type ConcurrencyOption struct {
 	Limit                   int `yaml:"limit" default:"30"`                   // Max number of hosts to operate on at once
 	WorkerDisruptionPercent int `yaml:"workerDisruptionPercent" default:"10"` // Max percentage of hosts to disrupt at once
 	Uploads                 int `yaml:"uploads" default:"5"`                  // Max concurrent file uploads
+	CanaryWorkers           int `yaml:"canaryWorkers" default:"0"`           // Number of workers to upgrade first as canary (0 = disabled)
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface for ConcurrencyOption.

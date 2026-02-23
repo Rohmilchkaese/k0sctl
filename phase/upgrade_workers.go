@@ -93,12 +93,44 @@ func (p *UpgradeWorkers) CleanUp() {
 
 // Run the phase
 func (p *UpgradeWorkers) Run(ctx context.Context) error {
-	// Upgrade worker hosts parallelly in 10% chunks
-	concurrentUpgrades := int(math.Floor(float64(len(p.hosts)) * float64(p.Config.Spec.Options.Concurrency.WorkerDisruptionPercent/100)))
+	concurrentUpgrades := int(math.Floor(float64(len(p.hosts)) * float64(p.Config.Spec.Options.Concurrency.WorkerDisruptionPercent)/100))
 	if concurrentUpgrades == 0 {
 		concurrentUpgrades = 1
 	}
 	concurrentUpgrades = min(concurrentUpgrades, p.Config.Spec.Options.Concurrency.Limit)
+
+	canaryCount := p.Config.Spec.Options.Concurrency.CanaryWorkers
+	if canaryCount > 0 && canaryCount < len(p.hosts) {
+		canaryCount = min(canaryCount, len(p.hosts))
+		canaryHosts := p.hosts[:canaryCount]
+		remainingHosts := p.hosts[canaryCount:]
+
+		log.Infof("Upgrading %d canary worker(s) first", canaryCount)
+		if err := canaryHosts.BatchedParallelEach(ctx, canaryCount,
+			p.start,
+			p.cordonWorker,
+			p.drainWorker,
+			p.upgradeWorker,
+			p.uncordonWorker,
+			p.finish,
+		); err != nil {
+			return fmt.Errorf("canary worker upgrade failed, aborting remaining upgrades: %w", err)
+		}
+		log.Infof("Canary upgrade successful, proceeding with remaining %d workers", len(remainingHosts))
+
+		if len(remainingHosts) > 0 {
+			log.Infof("Upgrading max %d remaining workers in parallel", concurrentUpgrades)
+			return remainingHosts.BatchedParallelEach(ctx, concurrentUpgrades,
+				p.start,
+				p.cordonWorker,
+				p.drainWorker,
+				p.upgradeWorker,
+				p.uncordonWorker,
+				p.finish,
+			)
+		}
+		return nil
+	}
 
 	log.Infof("Upgrading max %d workers in parallel", concurrentUpgrades)
 	return p.hosts.BatchedParallelEach(ctx, concurrentUpgrades,
