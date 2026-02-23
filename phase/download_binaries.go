@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
@@ -15,6 +16,13 @@ import (
 	"github.com/k0sproject/version"
 	log "github.com/sirupsen/logrus"
 )
+
+// httpClient is used instead of http.DefaultClient so that binary downloads
+// have a bounded total timeout. The default client has no timeout at all,
+// which can cause k0sctl to hang indefinitely on slow or stalled connections.
+var httpClient = &http.Client{
+	Timeout: 10 * time.Minute,
+}
 
 // DownloadBinaries downloads k0s binaries to localohost temp files
 type DownloadBinaries struct {
@@ -156,7 +164,7 @@ func (b binary) downloadTo(path string) error {
 		}
 	}()
 
-	resp, err := http.Get(b.url())
+	resp, err := httpClient.Get(b.url())
 	if err != nil {
 		return err
 	}
