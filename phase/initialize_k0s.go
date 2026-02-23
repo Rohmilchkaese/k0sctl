@@ -57,6 +57,9 @@ func (p *InitializeK0s) ShouldRun() bool {
 
 // CleanUp cleans up the environment override file
 func (p *InitializeK0s) CleanUp() {
+	if p.leader == nil {
+		return
+	}
 	h := p.leader
 
 	log.Infof("%s: cleaning up", h)
