@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 
+	"al.essio.dev/pkg/shellescape"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1/cluster"
 	"github.com/k0sproject/k0sctl/pkg/node"
@@ -114,6 +115,18 @@ func (p *UpgradeControllers) Run(ctx context.Context) error {
 			}
 			if err := retry.WithDefaultTimeout(ctx, node.ServiceStoppedFunc(h, h.K0sServiceName())); err != nil {
 				return fmt.Errorf("wait for k0s service stop: %w", err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		backupPath := h.K0sInstallLocation() + ".backup"
+		log.Debugf("%s: backing up current binary to %s", h, backupPath)
+		err = p.Wet(h, "backup current k0s binary", func() error {
+			if err := h.Execf(`cp %s %s`, shellescape.Quote(h.K0sInstallLocation()), shellescape.Quote(backupPath), exec.Sudo(h)); err != nil {
+				log.Warnf("%s: failed to backup k0s binary: %v", h, err)
 			}
 			return nil
 		})
