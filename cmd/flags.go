@@ -18,6 +18,7 @@ import (
 	"github.com/k0sproject/dig"
 	"github.com/k0sproject/k0sctl/phase"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
+	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1/cluster"
 	"github.com/k0sproject/k0sctl/pkg/manifest"
 	"github.com/k0sproject/k0sctl/pkg/retry"
 	k0sctl "github.com/k0sproject/k0sctl/version"
@@ -300,6 +301,9 @@ func readConfig(ctx *cli.Context) (*v1beta1.Cluster, error) {
 		return nil, fmt.Errorf("failed to resolve upload file paths: %w", err)
 	}
 	if k0sConfigs, err := mr.GetResources("k0s.k0sproject.io/v1beta1", "ClusterConfig"); err == nil && len(k0sConfigs) > 0 {
+		if cfg.Spec.K0s == nil {
+			cfg.Spec.K0s = &cluster.K0s{}
+		}
 		if cfg.Spec.K0s.Config == nil {
 			cfg.Spec.K0s.Config = make(dig.Mapping)
 		}

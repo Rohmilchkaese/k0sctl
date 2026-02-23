@@ -28,6 +28,12 @@ func (s *Spec) UnmarshalYAML(unmarshal func(any) error) error {
 		return err
 	}
 
+	// Ensure K0s is never nil, even when the YAML has an empty "k0s:" key
+	// which the yaml unmarshaler treats as null.
+	if ys.K0s == nil {
+		ys.K0s = &K0s{}
+	}
+
 	return defaults.Set(s)
 }
 
@@ -191,11 +197,13 @@ func (s *Spec) NodeInternalKubeAPIURL(h *Host) string {
 
 	// spec.api.onlyBindToAddress was introduced in k0s 1.30. Setting it to true will make the API server only
 	// listen on the IP address configured by the `address` option.
-	if onlyBindAddr, ok := s.K0s.Config.Dig("spec", "api", "onlyBindToAddress").(bool); ok && onlyBindAddr {
-		if h.PrivateAddress != "" {
-			addr = h.PrivateAddress
-		} else {
-			addr = h.Address()
+	if s.K0s != nil && s.K0s.Config != nil {
+		if onlyBindAddr, ok := s.K0s.Config.Dig("spec", "api", "onlyBindToAddress").(bool); ok && onlyBindAddr {
+			if h.PrivateAddress != "" {
+				addr = h.PrivateAddress
+			} else {
+				addr = h.Address()
+			}
 		}
 	}
 
