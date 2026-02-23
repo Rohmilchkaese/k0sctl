@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1/cluster"
@@ -66,14 +63,7 @@ func (p *DownloadK0s) Run(ctx context.Context) error {
 }
 
 func (p *DownloadK0s) downloadK0s(_ context.Context, h *cluster.Host) error {
-	ts := strconv.Itoa(int(time.Now().UnixNano()))
-	bin := h.K0sInstallLocation()
-	tmp := bin + ".tmp." + ts
-	if h.IsConnected() && h.IsWindows() {
-		if strings.HasSuffix(strings.ToLower(bin), ".exe") {
-			tmp = strings.TrimSuffix(bin, ".exe") + ".tmp." + ts + ".exe"
-		}
-	}
+	tmp := k0sBinaryTempFile(h)
 
 	log.Infof("%s: downloading k0s %s", h, p.Config.Spec.K0s.Version)
 	url, err := h.K0sDownloadURL(p.Config.Spec.K0s.Version)
