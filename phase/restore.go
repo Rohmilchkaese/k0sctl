@@ -44,6 +44,11 @@ func (p *Restore) Prepare(config *v1beta1.Cluster) error {
 
 	p.leader = p.Config.Spec.K0sLeader()
 
+	// Refuse to restore on a running cluster to prevent data corruption
+	if p.leader.Metadata.K0sRunningVersion != nil {
+		return fmt.Errorf("cannot restore backup on a running cluster (leader %s is running k0s %s) - restore can only be performed during initial cluster setup on a fresh host", p.leader, p.leader.Metadata.K0sRunningVersion)
+	}
+
 	log.Tracef("restore leader: %s", p.leader)
 	log.Tracef("restore leader state: %+v", p.leader.Metadata)
 	return nil
