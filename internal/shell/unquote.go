@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -25,6 +26,7 @@ var (
 
 // Unquote is a mostly POSIX compliant implementation of unquoting a string the same way a shell would.
 // Variables and command substitutions are not handled.
+// Additionally handles \xNN hex escape sequences commonly found in systemd service files.
 func Unquote(input string) (string, error) { //nolint:cyclop
 	sb, ok := builderPool.Get().(*strings.Builder)
 	if !ok {
@@ -35,7 +37,7 @@ func Unquote(input string) (string, error) { //nolint:cyclop
 
 	var inDoubleQuotes, inSingleQuotes, isEscaped bool
 
-	for i := range len(input) {
+	for i := 0; i < len(input); i++ {
 		currentChar := input[i]
 
 		if isEscaped {
@@ -56,6 +58,17 @@ func Unquote(input string) (string, error) { //nolint:cyclop
 			}
 
 			nextChar := input[i+1]
+
+			// Handle \xNN hex escape sequences (e.g. \x20 for space).
+			// These are commonly found in systemd service files.
+			if nextChar == 'x' && i+3 < len(input) {
+				if b, err := hex.DecodeString(input[i+2 : i+4]); err == nil {
+					sb.Write(b)
+					i += 3 // skip 'x' and two hex digits; the loop will increment i past the last digit
+					continue
+				}
+			}
+
 			if shouldEscape(nextChar, inDoubleQuotes) {
 				isEscaped = true
 				continue
