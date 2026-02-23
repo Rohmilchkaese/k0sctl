@@ -159,7 +159,7 @@ func (l *Linux) ReplaceK0sTokenPath(h os.Host, spath string) error {
 
 // FileContains returns true if a file contains the substring
 func (l *Linux) FileContains(h os.Host, path, s string) bool {
-	return h.Execf(`grep -q "%s" "%s"`, s, path, exec.Sudo(h)) == nil
+	return h.Execf(`grep -q %s %s`, shellescape.Quote(s), shellescape.Quote(path), exec.Sudo(h)) == nil
 }
 
 // MoveFile moves a file on the host
