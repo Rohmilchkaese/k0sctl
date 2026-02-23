@@ -48,13 +48,7 @@ func isEmptyK0s(k *K0s) bool {
 	if k == nil {
 		return true
 	}
-	if k.Config != nil {
-		return false
-	}
-	if k.Version != nil {
-		return false
-	}
-	return len(k.Config) == 0
+	return k.Config == nil && k.Version == nil && k.VersionChannel == "" && !k.DynamicConfig
 }
 
 // SetDefaults sets defaults
