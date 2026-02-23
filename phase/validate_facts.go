@@ -33,6 +33,8 @@ func (p *ValidateFacts) Run(_ context.Context) error {
 		return err
 	}
 
+	p.warnMultiControllerWithoutLoadBalancer()
+
 	return nil
 }
 
@@ -74,6 +76,36 @@ func (p *ValidateFacts) validateDefaultVersion() error {
 	}
 
 	return nil
+}
+
+func (p *ValidateFacts) warnMultiControllerWithoutLoadBalancer() {
+	controllers := p.Config.Spec.Hosts.Controllers()
+	if len(controllers) < 2 {
+		return
+	}
+
+	if p.Config.Spec.K0s == nil {
+		log.Warnf("multi-controller setup detected without spec.k0s configuration - ensure you have a load balancer or externalAddress configured for HA")
+		return
+	}
+
+	// Check for spec.api.externalAddress
+	if addr := p.Config.Spec.K0s.Config.DigString("spec", "api", "externalAddress"); addr != "" {
+		return
+	}
+
+	// Check for node-local load balancing
+	if enabled, ok := p.Config.Spec.K0s.Config.Dig("spec", "network", "nodeLocalLoadBalancing", "enabled").(bool); ok && enabled {
+		return
+	}
+
+	// Check for control plane load balancing (keepalived)
+	if enabled, ok := p.Config.Spec.K0s.Config.Dig("spec", "network", "controlPlaneLoadBalancing", "enabled").(bool); ok && enabled {
+		return
+	}
+
+	log.Warnf("multi-controller setup (%d controllers) detected without spec.api.externalAddress or load balancing enabled in the k0s config - this will likely cause issues with HA", len(controllers))
+	log.Warnf("set spec.k0s.config.spec.api.externalAddress to a load balancer address, or enable spec.k0s.config.spec.network.controlPlaneLoadBalancing")
 }
 
 func (p *ValidateFacts) validateNodeLocalLoadBalancing() error {
