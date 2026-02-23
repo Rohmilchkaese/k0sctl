@@ -70,8 +70,8 @@ func (p *ResetLeader) Run(ctx context.Context) error {
 	log.Debugf("%s: resetting k0s...", p.leader)
 	out, err := p.leader.ExecOutput(p.leader.K0sResetCommand(), exec.Sudo(p.leader))
 	if err != nil {
-		log.Debugf("%s: k0s reset failed: %s", p.leader, out)
-		log.Warnf("%s: k0s reported failure: %v", p.leader, err)
+		log.Debugf("%s: k0s reset output: %s", p.leader, out)
+		return fmt.Errorf("%s: k0s reset failed: %w", p.leader, err)
 	}
 	log.Debugf("%s: resetting k0s completed", p.leader)
 
