@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/creasty/defaults"
 	"github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
@@ -264,8 +265,12 @@ func (m *Manager) Run(ctx context.Context) error {
 			continue
 		}
 
+		// Track how long each phase takes so operators can identify slow
+		// phases when diagnosing performance issues in large deployments.
+		phaseStart := time.Now()
 		result = p.Run(ctx)
 		ran = append(ran, p)
+		log.Infof("phase %s completed in %s", title, time.Since(phaseStart).Truncate(time.Millisecond))
 
 		// Only run in-phase After hook if Run() succeeded.
 		// If After() fails after a successful Run(), return the After() error.
