@@ -29,7 +29,9 @@ func (r Reset) Run(ctx context.Context) error {
 		prompt := &survey.Confirm{
 			Message: "Going to reset all of the hosts, which will destroy all configuration and data, Are you sure?",
 		}
-		_ = survey.AskOne(prompt, &confirmed)
+		if err := survey.AskOne(prompt, &confirmed); err != nil {
+			return fmt.Errorf("failed to get user confirmation: %w", err)
+		}
 		if !confirmed {
 			return fmt.Errorf("confirmation or --force required to proceed")
 		}
