@@ -59,7 +59,13 @@ Shell injection and input validation fixes.
 | 27 | `claude/fix-port-validation-4YOuT` | Port range and controller count validation in init |
 | 28 | `claude/add-reset-knownhosts-cleanup-4YOuT` | Remove SSH known_hosts entries after node reset |
 
-## Tier 6: Code quality and features (might need discussion)
+## Tier 6: New features (may need RFC/discussion)
+
+| # | Branch | What it does |
+|---|--------|--------------|
+| 38 | `claude/add-status-command-4YOuT` | New `k0sctl status` command — read-only cluster health reporting |
+
+## Tier 7: Code quality (might need discussion)
 
 | # | Branch | What it does |
 |---|--------|--------------|
@@ -75,7 +81,7 @@ Shell injection and input validation fixes.
 
 ## Status
 
-- [x] All 37 branches created and pushed
+- [x] All 38 branches created and pushed
 - [x] All branches build cleanly (`go build ./...`)
 - [x] All tests pass (`go test ./...`)
 - [x] No vet warnings (`go vet ./...`)
