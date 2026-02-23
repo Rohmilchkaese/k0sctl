@@ -196,10 +196,6 @@ var initCommand = &cli.Command{
 						}
 						addresses = append(addresses, string(row))
 					}
-					if err != nil {
-						return err
-					}
-
 				}
 			}
 		}
