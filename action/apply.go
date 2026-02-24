@@ -60,6 +60,7 @@ func NewApply(opts ApplyOptions) *Apply {
 			// lockPhase,
 			&phase.PrepareHosts{},
 			&phase.GatherFacts{},
+			&phase.PreflightChecks{},
 			&phase.ValidateHosts{},
 			&phase.GatherK0sFacts{},
 			&phase.ValidateFacts{SkipDowngradeCheck: opts.DisableDowngradeCheck},
