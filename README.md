@@ -130,6 +130,8 @@ k0sctl apply --config path/to/k0sctl.yaml
 
 If the configuration cluster version `spec.k0s.version` is greater than the version detected on the cluster, a cluster upgrade will be performed. If the configuration lists hosts that are not part of the cluster, they will be configured to run k0s and will be joined to the cluster.
 
+Before making changes, `apply` runs preflight checks to catch common issues early: insufficient disk space on target hosts (< 2 GiB), clock skew between nodes (> 5s, which can cause etcd problems), and controller-to-controller connectivity on port 2380 (etcd peering). Failures are reported as warnings and do not block the operation.
+
 ### `k0sctl init`
 
 Generate a configuration template. Use `--k0s` to include an example `spec.k0s.config` k0s configuration block. You can also supply a list of host addresses via arguments or stdin.
