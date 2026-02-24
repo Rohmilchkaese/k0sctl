@@ -130,6 +130,16 @@ k0sctl apply --config path/to/k0sctl.yaml
 
 If the configuration cluster version `spec.k0s.version` is greater than the version detected on the cluster, a cluster upgrade will be performed. If the configuration lists hosts that are not part of the cluster, they will be configured to run k0s and will be joined to the cluster.
 
+### `k0sctl plan`
+
+Shows what changes `apply` would make without actually modifying the cluster. This is equivalent to `apply --dry-run` and is useful for reviewing planned actions before executing them.
+
+```sh
+k0sctl plan --config path/to/k0sctl.yaml
+```
+
+The output shows each phase that would run and what operations would be performed (e.g., installing k0s, upgrading nodes, applying manifests). No connections are modified and no commands are executed on remote hosts beyond gathering facts.
+
 ### `k0sctl init`
 
 Generate a configuration template. Use `--k0s` to include an example `spec.k0s.config` k0s configuration block. You can also supply a list of host addresses via arguments or stdin.
