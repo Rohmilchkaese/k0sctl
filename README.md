@@ -130,6 +130,45 @@ k0sctl apply --config path/to/k0sctl.yaml
 
 If the configuration cluster version `spec.k0s.version` is greater than the version detected on the cluster, a cluster upgrade will be performed. If the configuration lists hosts that are not part of the cluster, they will be configured to run k0s and will be joined to the cluster.
 
+Before making changes, `apply` runs preflight checks to catch common issues early: insufficient disk space on target hosts (< 2 GiB), clock skew between nodes (> 5s, which can cause etcd problems), and controller-to-controller connectivity on port 2380 (etcd peering). Failures are reported as warnings and do not block the operation.
+
+#### Etcd member reconciliation
+
+During `apply`, k0sctl automatically detects orphaned etcd members — members whose peer address no longer matches any controller in the configuration. This commonly occurs when a controller node fails and is replaced with a new machine (possibly at a different IP).
+
+Without `--force`, orphaned members are reported with instructions for manual removal:
+
+```sh
+WARN found 1 etcd member(s) not matching any controller in the configuration: [10.0.0.99]
+WARN to remove them manually: k0s etcd leave --peer-address 10.0.0.99
+```
+
+With `--force`, orphaned members are removed automatically after verifying quorum safety (the remaining healthy members must still form a majority):
+
+```sh
+k0sctl apply --force
+```
+
+If a new controller reuses the same IP as a dead member, `--force` also handles that case by running `k0s etcd leave` before joining the replacement node.
+
+### `k0sctl plan`
+
+Shows what changes `apply` would make without actually modifying the cluster. This is equivalent to `apply --dry-run` and is useful for reviewing planned actions before executing them.
+
+```sh
+k0sctl plan --config path/to/k0sctl.yaml
+```
+
+The output shows each phase that would run and what operations would be performed (e.g., installing k0s, upgrading nodes, applying manifests). No connections are modified and no commands are executed on remote hosts beyond gathering facts.
+
+### `k0sctl validate`
+
+Validates a k0sctl configuration file for errors without connecting to any hosts. Useful in CI pipelines and for catching mistakes before running `apply`.
+
+```sh
+k0sctl validate --config path/to/k0sctl.yaml
+```
+
 ### `k0sctl init`
 
 Generate a configuration template. Use `--k0s` to include an example `spec.k0s.config` k0s configuration block. You can also supply a list of host addresses via arguments or stdin.
@@ -186,6 +225,69 @@ $ kubectl get node --kubeconfig k0s.config
 NAME      STATUS     ROLES    AGE   VERSION
 worker0   NotReady   <none>   10s   v1.20.2-k0s1
 ```
+
+### `k0sctl status`
+
+Connects to the cluster and displays the current status of all nodes, including k0s version, service state, and etcd health. This is a read-only operation that makes no changes to the cluster.
+
+```sh
+k0sctl status --config path/to/k0sctl.yaml
+```
+
+Example output:
+
+```text
+Cluster: my-k0s-cluster
+Desired k0s version: v1.31.0+k0s.0
+
+HOST          ROLE              HOSTNAME     K0S VERSION         STATUS        NOTES
+----          ----              --------     -----------         ------        -----
+10.0.0.1      controller        ctrl-1       v1.31.0+k0s.0      [+] Running   leader
+10.0.0.2      controller        ctrl-2       v1.31.0+k0s.0      [+] Running
+10.0.0.3      worker            worker-1     v1.31.0+k0s.0      [+] Ready
+10.0.0.4      worker            worker-2     v1.30.0+k0s.0      [+] Ready     needs upgrade, want v1.31.0+k0s.0
+
+etcd: healthy (2 members)
+etcd members: 10.0.0.1, 10.0.0.2
+```
+
+Use `--output json` for machine-readable output:
+
+```sh
+k0sctl status --output json
+```
+
+### `k0sctl certs check`
+
+Connects to all controllers in the cluster and inspects certificate expiry in the k0s PKI directory. Reports certificates that are expired, expiring soon, or valid.
+
+```sh
+k0sctl certs check --config path/to/k0sctl.yaml
+```
+
+By default, certificates expiring within 30 days are flagged with a warning. Use `--expiry-warning-days` to adjust the threshold:
+
+```sh
+k0sctl certs check --expiry-warning-days 90
+```
+
+### `k0sctl certs renew`
+
+Renews non-CA (leaf) certificates by performing a rolling restart of k0s controllers. k0s automatically rotates leaf certificates — apiserver, kubelet, etcd peer/client, front-proxy, etc. — on startup, so restarting the service is sufficient.
+
+Controllers are restarted one-by-one to maintain API availability. The command waits for each controller to pass its readiness check before proceeding to the next.
+
+```sh
+k0sctl certs renew --config path/to/k0sctl.yaml
+```
+
+Use `--dry-run` to preview what would happen without making changes:
+
+```sh
+k0sctl certs renew --dry-run
+```
+
+**Note:** CA certificates (10-year default lifetime) are NOT renewed by this command. CA replacement requires a manual process — see the [k0s CA documentation](https://docs.k0sproject.io/stable/troubleshooting/certificate-authorities/).
 
 ## Configuration file
 
@@ -835,6 +937,10 @@ The maximum number of hosts to operate on concurrently during cluster operations
 ##### `spec.options.concurrency.workerDisruptionPercent` &lt;integer&gt; (optional) (default: 10)
 
 The maximum percentage of worker nodes that can be disrupted at the same time during operations such as upgrade. This is used to ensure that a minimum number of worker nodes remain available during the operation. The value must be between 0 and 100.
+
+##### `spec.options.concurrency.canaryWorkers` &lt;integer&gt; (optional) (default: 0)
+
+Number of worker nodes to upgrade first as canaries before proceeding with the remaining workers. When set to a value greater than 0, the first N workers are upgraded and validated before the rest are upgraded in parallel batches. If a canary upgrade fails, the remaining upgrades are aborted. Set to 0 (default) to disable canary upgrades.
 
 ##### `spec.options.concurrency.uploads` &lt;integer&gt; (optional) (default: 5)
 
