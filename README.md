@@ -836,6 +836,10 @@ The maximum number of hosts to operate on concurrently during cluster operations
 
 The maximum percentage of worker nodes that can be disrupted at the same time during operations such as upgrade. This is used to ensure that a minimum number of worker nodes remain available during the operation. The value must be between 0 and 100.
 
+##### `spec.options.concurrency.canaryWorkers` &lt;integer&gt; (optional) (default: 0)
+
+Number of worker nodes to upgrade first as canaries before proceeding with the remaining workers. When set to a value greater than 0, the first N workers are upgraded and validated before the rest are upgraded in parallel batches. If a canary upgrade fails, the remaining upgrades are aborted. Set to 0 (default) to disable canary upgrades.
+
 ##### `spec.options.concurrency.uploads` &lt;integer&gt; (optional) (default: 5)
 
 The maximum number of concurrent file uploads to perform. Same as the `--concurrent-uploads` command line option.
