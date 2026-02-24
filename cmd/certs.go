@@ -33,7 +33,7 @@ var certsCheckCommand = &cli.Command{
 			Value:   30,
 		},
 	},
-	Before: actions(initLogging, displayCopyright, initManager),
+	Before: actions(initLogging, displayCopyright, initConfig, initManager),
 	After:  actions(cancelTimeout),
 	Action: func(ctx *cli.Context) error {
 		certsCheck := action.NewCertsCheck(action.CertsCheckOptions{
@@ -64,7 +64,7 @@ See: https://docs.k0sproject.io/stable/troubleshooting/certificate-authorities/`
 		concurrencyFlag,
 		dryRunFlag,
 	},
-	Before: actions(initLogging, displayCopyright, initManager),
+	Before: actions(initLogging, displayCopyright, initConfig, initManager),
 	After:  actions(cancelTimeout),
 	Action: func(ctx *cli.Context) error {
 		certsRenew := action.NewCertsRenew(action.CertsRenewOptions{

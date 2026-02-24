@@ -187,6 +187,38 @@ NAME      STATUS     ROLES    AGE   VERSION
 worker0   NotReady   <none>   10s   v1.20.2-k0s1
 ```
 
+### `k0sctl certs check`
+
+Connects to all controllers in the cluster and inspects certificate expiry in the k0s PKI directory. Reports certificates that are expired, expiring soon, or valid.
+
+```sh
+k0sctl certs check --config path/to/k0sctl.yaml
+```
+
+By default, certificates expiring within 30 days are flagged with a warning. Use `--expiry-warning-days` to adjust the threshold:
+
+```sh
+k0sctl certs check --expiry-warning-days 90
+```
+
+### `k0sctl certs renew`
+
+Renews non-CA (leaf) certificates by performing a rolling restart of k0s controllers. k0s automatically rotates leaf certificates — apiserver, kubelet, etcd peer/client, front-proxy, etc. — on startup, so restarting the service is sufficient.
+
+Controllers are restarted one-by-one to maintain API availability. The command waits for each controller to pass its readiness check before proceeding to the next.
+
+```sh
+k0sctl certs renew --config path/to/k0sctl.yaml
+```
+
+Use `--dry-run` to preview what would happen without making changes:
+
+```sh
+k0sctl certs renew --dry-run
+```
+
+**Note:** CA certificates (10-year default lifetime) are NOT renewed by this command. CA replacement requires a manual process — see the [k0s CA documentation](https://docs.k0sproject.io/stable/troubleshooting/certificate-authorities/).
+
 ## Configuration file
 
 The configuration file is in YAML format and loosely resembles the syntax used in Kubernetes. YAML anchors and aliases can be used.
