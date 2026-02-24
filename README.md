@@ -187,6 +187,37 @@ NAME      STATUS     ROLES    AGE   VERSION
 worker0   NotReady   <none>   10s   v1.20.2-k0s1
 ```
 
+### `k0sctl status`
+
+Connects to the cluster and displays the current status of all nodes, including k0s version, service state, and etcd health. This is a read-only operation that makes no changes to the cluster.
+
+```sh
+k0sctl status --config path/to/k0sctl.yaml
+```
+
+Example output:
+
+```text
+Cluster: my-k0s-cluster
+Desired k0s version: v1.31.0+k0s.0
+
+HOST          ROLE              HOSTNAME     K0S VERSION         STATUS        NOTES
+----          ----              --------     -----------         ------        -----
+10.0.0.1      controller        ctrl-1       v1.31.0+k0s.0      [+] Running   leader
+10.0.0.2      controller        ctrl-2       v1.31.0+k0s.0      [+] Running
+10.0.0.3      worker            worker-1     v1.31.0+k0s.0      [+] Ready
+10.0.0.4      worker            worker-2     v1.30.0+k0s.0      [+] Ready     needs upgrade, want v1.31.0+k0s.0
+
+etcd: healthy (2 members)
+etcd members: 10.0.0.1, 10.0.0.2
+```
+
+Use `--output json` for machine-readable output:
+
+```sh
+k0sctl status --output json
+```
+
 ## Configuration file
 
 The configuration file is in YAML format and loosely resembles the syntax used in Kubernetes. YAML anchors and aliases can be used.
