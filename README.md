@@ -130,6 +130,25 @@ k0sctl apply --config path/to/k0sctl.yaml
 
 If the configuration cluster version `spec.k0s.version` is greater than the version detected on the cluster, a cluster upgrade will be performed. If the configuration lists hosts that are not part of the cluster, they will be configured to run k0s and will be joined to the cluster.
 
+#### Etcd member reconciliation
+
+During `apply`, k0sctl automatically detects orphaned etcd members — members whose peer address no longer matches any controller in the configuration. This commonly occurs when a controller node fails and is replaced with a new machine (possibly at a different IP).
+
+Without `--force`, orphaned members are reported with instructions for manual removal:
+
+```sh
+WARN found 1 etcd member(s) not matching any controller in the configuration: [10.0.0.99]
+WARN to remove them manually: k0s etcd leave --peer-address 10.0.0.99
+```
+
+With `--force`, orphaned members are removed automatically after verifying quorum safety (the remaining healthy members must still form a majority):
+
+```sh
+k0sctl apply --force
+```
+
+If a new controller reuses the same IP as a dead member, `--force` also handles that case by running `k0s etcd leave` before joining the replacement node.
+
 ### `k0sctl init`
 
 Generate a configuration template. Use `--k0s` to include an example `spec.k0s.config` k0s configuration block. You can also supply a list of host addresses via arguments or stdin.
