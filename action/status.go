@@ -47,12 +47,12 @@ func (s *Status) Run(ctx context.Context) error {
 	s.Manager.SetPhases(phases)
 
 	if err := s.Manager.Run(ctx); err != nil {
-		log.Infof(phase.Colorize.Red("==> Status check failed").String())
+		log.Info(phase.Colorize.Red("==> Status check failed").String())
 		return err
 	}
 
 	duration := time.Since(start).Truncate(time.Second)
-	log.Infof(phase.Colorize.Green(fmt.Sprintf("==> Status collected in %s", duration)).String())
+	log.Info(phase.Colorize.Green(fmt.Sprintf("==> Status collected in %s", duration)).String())
 
 	return nil
 }
