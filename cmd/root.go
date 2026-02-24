@@ -52,6 +52,7 @@ func NewK0sctl(in io.Reader, out, errOut io.Writer) *cli.App {
 			initCommand,
 			resetCommand,
 			backupCommand,
+			planCommand,
 			{
 				Name:  "config",
 				Usage: "Configuration related sub-commands",
